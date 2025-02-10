@@ -6,7 +6,8 @@ import os
 import whisper
 from gtts import gTTS
 from pydub import AudioSegment
-from moviepy.editor import VideoFileClip, AudioFileClip, CompositeVideoClip, TextClip, SubtitlesClip
+from moviepy.editor import VideoFileClip, CompositeVideoClip, TextClip, AudioFileClip
+from moviepy.video.tools.subtitles import SubtitlesClip
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_groq import ChatGroq
