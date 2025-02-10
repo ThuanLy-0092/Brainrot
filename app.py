@@ -6,15 +6,13 @@ import os
 import whisper
 from gtts import gTTS
 from pydub import AudioSegment
-from moviepy.editor import VideoFileClip, CompositeVideoClip, TextClip, AudioFileClip
-from moviepy.video.tools.subtitles import SubtitlesClip
+from moviepy.editor import VideoFileClip, AudioFileClip, CompositeVideoClip, TextClip
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_groq import ChatGroq
 from langchain.chains import LLMChain
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-
 
 def get_random_video_from_playlist(playlist_url):
     ydl_opts = {
@@ -72,42 +70,49 @@ def text_to_speech(text, output_file="output.mp3", playback_speed=1.5):
     tts = gTTS(text=text, lang="en", slow=False)
     tts.save(temp_mp3_path)
     
+    # Wait until the file is actually written
+    import time
+    while not os.path.exists(temp_mp3_path):
+        time.sleep(0.5)
+    
+    print("File exists:", os.path.exists(temp_mp3_path))
+
+    # Load and modify the audio
     audio = AudioSegment.from_file(temp_mp3_path, format="mp3")
     modified_audio = audio._spawn(audio.raw_data, overrides={"frame_rate": int(audio.frame_rate * playback_speed)})
     modified_audio = modified_audio.set_frame_rate(audio.frame_rate)
     
+    # Export final audio
     modified_audio.export(output_file, format="mp3")
     return output_file
 
-def generate_subtitles(audio_path, output_srt="output.srt"):
-    model = whisper.load_model("base")
-    transcribe = model.transcribe(audio=audio_path, fp16=False)
-    segments = transcribe["segments"]
-    
-    with open(output_srt, "w", encoding="utf-8") as f:
-        for seg in segments:
-            start = f"00:00:{int(seg['start']):02},000"
-            end = f"00:00:{int(seg['end']):02},000"
-            text = seg["text"].strip()
-            segment_id = seg["id"] + 1
-            f.write(f"{segment_id}\n{start} --> {end}\n{text}\n\n")
-    
-    return output_srt
 
-def attach_subtitles(video_path, audio_path, output_video="final_output.mp4"):
+def process_video(video_path, audio_path, output_video="final_output.mp4"):
+    if not os.path.exists(video_path):
+        raise FileNotFoundError(f"Video file not found: {video_path}")
+    if not os.path.exists(audio_path):
+        raise FileNotFoundError(f"Audio file not found: {audio_path}")
+
+    # Check file size (to prevent processing empty files)
+    if os.path.getsize(video_path) == 0:
+        raise ValueError("Downloaded video file is empty.")
+    if os.path.getsize(audio_path) == 0:
+        raise ValueError("Generated audio file is empty.")
+
     video = VideoFileClip(video_path)
     audio = AudioFileClip(audio_path)
-    output_srt = generate_subtitles(audio_path)
-    
-    generator = lambda txt: TextClip(
-        txt, font='DejaVu-Sans', fontsize=40, color='white', stroke_color='black',
-        stroke_width=1, method='caption', size=(video.w * 0.9, None), align='center'
-    )
-    subtitles = SubtitlesClip(output_srt, generator)
-    video_with_subtitles = CompositeVideoClip([video, subtitles.set_position(('center', 0.85), relative=True)])
-    video_with_subtitles = video_with_subtitles.set_audio(audio)
-    video_with_subtitles.write_videofile(output_video, codec="libx264", audio_codec="aac")
-    
+
+    # Ensure the video and audio have proper durations
+    min_duration = min(video.duration, audio.duration)
+    if min_duration <= 0:
+        raise ValueError("Invalid video/audio duration.")
+
+    video = video.subclip(0, min_duration)
+    video = video.set_audio(audio)
+
+    # Save final video
+    video.write_videofile(output_video, codec="libx264", audio_codec="aac")
+
     return output_video
 
 st.title("📽️ Video Generator from YouTube & PDF")
@@ -129,7 +134,7 @@ if pdf_file:
         random_video_url = get_random_video_from_playlist(playlist_url)
         if random_video_url:
             video_path = download_video_clip(random_video_url, "video.mp4", duration=50)
-            final_video = attach_subtitles(video_path, audio_path, "final_output.mp4")
+            final_video = process_video(video_path, audio_path, "final_output.mp4")
             st.video(final_video)
 else:
     st.write("Upload a PDF to proceed!")
