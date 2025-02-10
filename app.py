@@ -65,13 +65,27 @@ def generate_brainrot_text(text):
     return chain.run({"text": text})
 
 def text_to_speech(text, output_file="output.mp3", playback_speed=1.5):
+    temp_mp3_path = "temp.mp3"
+    
     tts = gTTS(text=text, lang="en", slow=False)
-    tts.save("temp.mp3")
-    audio = AudioSegment.from_file("temp.mp3", format="mp3")
+    tts.save(temp_mp3_path)
+    
+    # Wait until the file is actually written
+    import time
+    while not os.path.exists(temp_mp3_path):
+        time.sleep(0.5)
+    
+    print("File exists:", os.path.exists(temp_mp3_path))
+
+    # Load and modify the audio
+    audio = AudioSegment.from_file(temp_mp3_path, format="mp3")
     modified_audio = audio._spawn(audio.raw_data, overrides={"frame_rate": int(audio.frame_rate * playback_speed)})
     modified_audio = modified_audio.set_frame_rate(audio.frame_rate)
+    
+    # Export final audio
     modified_audio.export(output_file, format="mp3")
     return output_file
+
 
 def process_video(video_path, audio_path, output_video="final_output.mp4"):
     video = VideoFileClip(video_path)
