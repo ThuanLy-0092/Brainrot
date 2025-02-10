@@ -15,15 +15,6 @@ from langchain.chains import LLMChain
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
-def fix_imagemagick_policy():
-    policy_path = "/etc/ImageMagick-6/policy.xml"
-    if os.path.exists(policy_path):
-        with open(policy_path, "r") as f:
-            policy_data = f.read()
-        policy_data = policy_data.replace("none", "read,write")
-        with open(policy_path, "w") as f:
-            f.write(policy_data)
-fix_imagemagick_policy()
 
 def get_random_video_from_playlist(playlist_url):
     ydl_opts = {
