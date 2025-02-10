@@ -99,7 +99,7 @@ def attach_subtitles(video_path, audio_path, output_video="final_output.mp4"):
     output_srt = generate_subtitles(audio_path)
     
     generator = lambda txt: TextClip(
-        txt, font='Arial', fontsize=40, color='white', stroke_color='black',
+        txt, font='DejaVu-Sans', fontsize=40, color='white', stroke_color='black',
         stroke_width=1, method='caption', size=(video.w * 0.9, None), align='center'
     )
     subtitles = SubtitlesClip(output_srt, generator)
