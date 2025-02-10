@@ -96,7 +96,7 @@ def process_video(video_path, audio_path, output_video="final_output.mp4"):
     return output_video
 
 st.title("📽️ Video Generator from YouTube & PDF")
-playlist_url = st.text_input("Enter YouTube Playlist URL")
+playlist_url = "https://www.youtube.com/playlist?list=PLJVvekmbcMxBCh1Cb997PA2hsrxmxdB6G"
 pdf_file = st.file_uploader("Upload PDF File", type=["pdf"])
 
 temp_pdf_path = "temp.pdf"
