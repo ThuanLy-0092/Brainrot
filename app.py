@@ -26,7 +26,7 @@ def get_random_video_from_playlist(playlist_url):
 
 def download_video_clip(url, output_path="video.mp4", duration=50):
     ydl_opts = {
-        'format': 'best[ext=mp4]',
+        'format': 'bv*[height<=1080][ext=mp4]+ba[ext=m4a]/b[height<=1080][ext=mp4]',
         'outtmpl': output_path,
         'download_sections': [f"*0-{duration}"],
     }
