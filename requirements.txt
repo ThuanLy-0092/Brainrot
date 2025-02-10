@@ -2,7 +2,7 @@ openai-whisper
 update
 ffmpeg
 moviepy==2.0.0.dev2
-imageio==2.25.1
+imageio
 imagemagick
 pysrt==1.1.2
 gTTS
