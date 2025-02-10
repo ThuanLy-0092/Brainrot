@@ -88,11 +88,31 @@ def text_to_speech(text, output_file="output.mp3", playback_speed=1.5):
 
 
 def process_video(video_path, audio_path, output_video="final_output.mp4"):
+    if not os.path.exists(video_path):
+        raise FileNotFoundError(f"Video file not found: {video_path}")
+    if not os.path.exists(audio_path):
+        raise FileNotFoundError(f"Audio file not found: {audio_path}")
+
+    # Check file size (to prevent processing empty files)
+    if os.path.getsize(video_path) == 0:
+        raise ValueError("Downloaded video file is empty.")
+    if os.path.getsize(audio_path) == 0:
+        raise ValueError("Generated audio file is empty.")
+
     video = VideoFileClip(video_path)
     audio = AudioFileClip(audio_path)
-    video = video.subclip(0, audio.duration)
+
+    # Ensure the video and audio have proper durations
+    min_duration = min(video.duration, audio.duration)
+    if min_duration <= 0:
+        raise ValueError("Invalid video/audio duration.")
+
+    video = video.subclip(0, min_duration)
     video = video.set_audio(audio)
+
+    # Save final video
     video.write_videofile(output_video, codec="libx264", audio_codec="aac")
+
     return output_video
 
 st.title("📽️ Video Generator from YouTube & PDF")
