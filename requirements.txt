@@ -11,3 +11,4 @@ langchain_groq
 langchain_community
 pypdf
 yt_dlp
+fastapi
