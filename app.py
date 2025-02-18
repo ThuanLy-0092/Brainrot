@@ -163,17 +163,17 @@ if pdf_file:
     st.audio(audio_path)
     if st.button("Generate Video"):
     random_video_url = get_random_video_from_playlist(playlist_url)
-    if random_video_url:
-        video_path = download_video_clip(random_video_url, "video.mp4", duration=50)
-        final_video = process_video(video_path, audio_path, "final_output.mp4")
-
-        # 🎯 Tạo file SRT từ audio bằng Whisper
-        subtitle_path = generate_srt_from_audio(audio_path, "output.srt")
-
-        # 🚀 Gửi video + sub lên API
-        final_video_with_subs = add_subtitles_to_video(final_video, subtitle_path)
-
-        st.video(final_video_with_subs)
+        if random_video_url:
+            video_path = download_video_clip(random_video_url, "video.mp4", duration=50)
+            final_video = process_video(video_path, audio_path, "final_output.mp4")
+    
+            # 🎯 Tạo file SRT từ audio bằng Whisper
+            subtitle_path = generate_srt_from_audio(audio_path, "output.srt")
+    
+            # 🚀 Gửi video + sub lên API
+            final_video_with_subs = add_subtitles_to_video(final_video, subtitle_path)
+    
+            st.video(final_video_with_subs)
 
 else:
     st.write("Upload a PDF to proceed!")
