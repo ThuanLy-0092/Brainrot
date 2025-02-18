@@ -14,3 +14,4 @@ yt_dlp
 fastapi
 streamlit
 python-multipart
+uvicorn
