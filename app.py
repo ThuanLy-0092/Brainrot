@@ -14,7 +14,7 @@ from langchain_groq import ChatGroq
 from langchain.chains import LLMChain
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-
+from datetime import timedelta
 def get_random_video_from_playlist(playlist_url):
     ydl_opts = {
         'quiet': True,
