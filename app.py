@@ -4,6 +4,7 @@ import random
 import re
 import os
 import whisper
+import requests
 from gtts import gTTS
 from pydub import AudioSegment
 from moviepy.editor import VideoFileClip, AudioFileClip, CompositeVideoClip, TextClip
@@ -70,22 +71,18 @@ def text_to_speech(text, output_file="output.mp3", playback_speed=1.5):
     tts = gTTS(text=text, lang="en", slow=False)
     tts.save(temp_mp3_path)
 
-    # Wait until the file is actually written
     import time
     while not os.path.exists(temp_mp3_path):
         time.sleep(0.5)
 
     print("File exists:", os.path.exists(temp_mp3_path))
 
-    # Load and modify the audio
     audio = AudioSegment.from_file(temp_mp3_path, format="mp3")
     modified_audio = audio._spawn(audio.raw_data, overrides={"frame_rate": int(audio.frame_rate * playback_speed)})
     modified_audio = modified_audio.set_frame_rate(audio.frame_rate)
 
-    # Export final audio
     modified_audio.export(output_file, format="mp3")
     return output_file
-
 
 def process_video(video_path, audio_path, output_video="final_output.mp4"):
     if not os.path.exists(video_path):
@@ -93,7 +90,6 @@ def process_video(video_path, audio_path, output_video="final_output.mp4"):
     if not os.path.exists(audio_path):
         raise FileNotFoundError(f"Audio file not found: {audio_path}")
 
-    # Check file size (to prevent processing empty files)
     if os.path.getsize(video_path) == 0:
         raise ValueError("Downloaded video file is empty.")
     if os.path.getsize(audio_path) == 0:
@@ -102,7 +98,6 @@ def process_video(video_path, audio_path, output_video="final_output.mp4"):
     video = VideoFileClip(video_path)
     audio = AudioFileClip(audio_path)
 
-    # Ensure the video and audio have proper durations
     min_duration = min(video.duration, audio.duration)
     if min_duration <= 0:
         raise ValueError("Invalid video/audio duration.")
@@ -110,10 +105,18 @@ def process_video(video_path, audio_path, output_video="final_output.mp4"):
     video = video.subclip(0, min_duration)
     video = video.set_audio(audio)
 
-    # Save final video
     video.write_videofile(output_video, codec="libx264", audio_codec="aac")
 
     return output_video
+
+def add_subtitles_to_video(video_path, subtitles, output_video="final_video_with_subs.mp4"):
+    api_url = "http://localhost:8000/add_subtitles"
+    payload = {"video_path": video_path, "subtitles": subtitles}
+    response = requests.post(api_url, json=payload)
+    if response.status_code == 200:
+        return response.json()["output_video"]
+    else:
+        raise Exception("Failed to add subtitles")
 
 st.title("📽️ Video Generator from YouTube & PDF")
 playlist_url = "https://www.youtube.com/playlist?list=PLJVvekmbcMxBCh1Cb997PA2hsrxmxdB6G"
@@ -135,6 +138,7 @@ if pdf_file:
         if random_video_url:
             video_path = download_video_clip(random_video_url, "video.mp4", duration=50)
             final_video = process_video(video_path, audio_path, "final_output.mp4")
-            st.video(final_video)
+            final_video_with_subs = add_subtitles_to_video(final_video, brainrot_text)
+            st.video(final_video_with_subs)
 else:
     st.write("Upload a PDF to proceed!")
