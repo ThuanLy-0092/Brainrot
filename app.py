@@ -131,7 +131,7 @@ def generate_srt_from_audio(audio_path, output_srt="output.srt"):
 
 
 def add_subtitles_to_video(video_path, subtitle_path, audio_path, output_video="final_video_with_subs.mp4"):
-    api_url = "https://brainrot-fkem.onrender.com/add_subtitles/"
+    api_url = "https://brainrot-fkem.onrender.com/attach_subtitles/"
 
     with open(video_path, "rb") as vid, open(subtitle_path, "rb") as sub, open(audio_path, "rb") as aud:
         files = {
@@ -142,9 +142,12 @@ def add_subtitles_to_video(video_path, subtitle_path, audio_path, output_video="
         response = requests.post(api_url, files=files)
 
     if response.status_code == 200:
-        return response.json()["output_video"]
+        with open(output_video, "wb") as f:
+            f.write(response.content)  # Lưu video nhận được từ API
+        
+        return output_video
     else:
-        raise Exception(f"Failed to add subtitles: {response.text}")
+        raise Exception(f"Failed to attach subtitles: {response.text}")
 
 
 
