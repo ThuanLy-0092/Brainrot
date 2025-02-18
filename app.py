@@ -131,7 +131,7 @@ def generate_srt_from_audio(audio_path, output_srt="output.srt"):
 
 
 def add_subtitles_to_video(video_path, subtitle_path, audio_path, output_video="final_video_with_subs.mp4"):
-    api_url = "https://brainrot-fkem.onrender.com/attach_subtitles/"
+    api_url = "http://127.0.0.1:8000/add_subtitles/"
 
     with open(video_path, "rb") as vid, open(subtitle_path, "rb") as sub, open(audio_path, "rb") as aud:
         files = {
