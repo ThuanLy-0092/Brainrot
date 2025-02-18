@@ -4,6 +4,8 @@ import subprocess
 import os
 import uvicorn
 from fastapi.responses import FileResponse
+from moviepy.editor import VideoFileClip, CompositeVideoClip, TextClip, AudioFileClip
+from moviepy.video.tools.subtitles import SubtitlesClip
 app = FastAPI()
 
 UPLOAD_DIR = "/app"
