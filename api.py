@@ -20,7 +20,11 @@ async def head_status():
     return {}
 
 @app.post("/add_subtitles/")
-async def attach_subtitles(video: UploadFile = File(...), subtitle: UploadFile = File(...), audio: UploadFile = File(...)):
+async def attach_subtitles(
+    video: UploadFile = File(...), 
+    subtitle: UploadFile = File(...), 
+    audio: UploadFile = File(...)
+):
     """Nhận video, subtitle và audio, chèn sub vào video."""
     video_path = os.path.join(UPLOAD_DIR, video.filename)
     subtitle_path = os.path.join(UPLOAD_DIR, subtitle.filename)
@@ -34,22 +38,23 @@ async def attach_subtitles(video: UploadFile = File(...), subtitle: UploadFile =
         f.write(subtitle.file.read())
     with open(audio_path, "wb") as f:
         f.write(audio.file.read())
-    
+
     # Load video
     video_clip = VideoFileClip(video_path)
-    
+
     # Tạo subtitle clip
     generator = lambda txt: TextClip(txt, font='Arial', fontsize=40, color='white', stroke_color='black', stroke_width=1, method='caption', size=(video_clip.w * 0.9, None), align='center')
     subtitles = SubtitlesClip(subtitle_path, generator)
-    
+
     # Ghép sub vào video
     video_with_subtitles = CompositeVideoClip([video_clip, subtitles.set_position(('center', 0.85), relative=True)])
-    
+
     # Gán lại audio
     audio_clip = AudioFileClip(audio_path)
     video_with_subtitles = video_with_subtitles.set_audio(audio_clip)
-    
+
     # Xuất video mới
     video_with_subtitles.write_videofile(output_path, codec="libx264", audio_codec="aac")
-    
-    return {"message": "Subtitles attached!", "output_file": f"/download/output_{video.filename}"}
+
+    # Trả về file video đã ghép sub
+    return FileResponse(output_path, media_type="video/mp4", filename=f"output_{video.filename}")
