@@ -13,3 +13,4 @@ pypdf
 yt_dlp
 fastapi
 streamlit
+python-multipart
