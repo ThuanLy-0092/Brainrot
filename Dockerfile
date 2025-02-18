@@ -3,9 +3,10 @@ FROM python:3.12
 
 # Cài đặt các gói hệ thống cần thiết
 RUN apt-get update && apt-get install -y \
-    ffmpeg libsm6 libxext6 imagemagick fonts-dejavu \
+    ffmpeg libsm6 libxext6 imagemagick fonts-dejavu ttf-mscorefonts-installer \
+    && fc-cache -fv \
     && rm -rf /var/lib/apt/lists/*
-
+    
 # Sửa policy của ImageMagick để xử lý ảnh
 RUN sed -i 's/none/read,write/g' /etc/ImageMagick-6/policy.xml
 
