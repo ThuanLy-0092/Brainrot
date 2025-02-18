@@ -162,7 +162,7 @@ if pdf_file:
     audio_path = text_to_speech(brainrot_text, "output.mp3", playback_speed=1.5)
     st.audio(audio_path)
     if st.button("Generate Video"):
-    random_video_url = get_random_video_from_playlist(playlist_url)
+        random_video_url = get_random_video_from_playlist(playlist_url)
         if random_video_url:
             video_path = download_video_clip(random_video_url, "video.mp4", duration=50)
             final_video = process_video(video_path, audio_path, "final_output.mp4")
