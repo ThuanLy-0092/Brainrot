@@ -130,13 +130,14 @@ def generate_srt_from_audio(audio_path, output_srt="output.srt"):
     return output_srt
 
 
-def add_subtitles_to_video(video_path, subtitle_path, output_video="final_video_with_subs.mp4"):
+def add_subtitles_to_video(video_path, subtitle_path, audio_path, output_video="final_video_with_subs.mp4"):
     api_url = "https://brainrot-fkem.onrender.com/add_subtitles/"
 
-    with open(video_path, "rb") as vid, open(subtitle_path, "rb") as sub:
+    with open(video_path, "rb") as vid, open(subtitle_path, "rb") as sub, open(audio_path, "rb") as aud:
         files = {
             "video": vid,
-            "subtitle": sub
+            "subtitle": sub,
+            "audio": aud
         }
         response = requests.post(api_url, files=files)
 
@@ -144,6 +145,7 @@ def add_subtitles_to_video(video_path, subtitle_path, output_video="final_video_
         return response.json()["output_video"]
     else:
         raise Exception(f"Failed to add subtitles: {response.text}")
+
 
 
 st.title("📽️ Video Generator from YouTube & PDF")
@@ -171,7 +173,7 @@ if pdf_file:
             subtitle_path = generate_srt_from_audio(audio_path, "output.srt")
     
             # 🚀 Gửi video + sub lên API
-            final_video_with_subs = add_subtitles_to_video(final_video, subtitle_path)
+            final_video_with_subs = add_subtitles_to_video(final_video, subtitle_path, audio_path)
     
             st.video(final_video_with_subs)
 
