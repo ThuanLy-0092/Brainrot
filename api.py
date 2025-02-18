@@ -4,7 +4,7 @@ import subprocess
 import os
 import uvicorn
 from fastapi.responses import FileResponse
-from moviepy import VideoFileClip, CompositeVideoClip, TextClip, AudioFileClip
+from moviepy.editor import *
 from moviepy.video.tools.subtitles import SubtitlesClip
 app = FastAPI()
 
