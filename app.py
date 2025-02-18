@@ -109,14 +109,42 @@ def process_video(video_path, audio_path, output_video="final_output.mp4"):
 
     return output_video
 
-def add_subtitles_to_video(video_path, subtitles, output_video="final_video_with_subs.mp4"):
+def generate_srt_from_audio(audio_path, output_srt="output.srt"):
+    if os.path.exists(output_srt):
+        os.remove(output_srt)
+
+    print("Generating subtitles using Whisper...")
+    model = whisper.load_model("base")
+    transcribe = model.transcribe(audio=audio_path, fp16=False)
+    segments = transcribe["segments"]
+
+    with open(output_srt, "a", encoding="utf-8") as f:
+        for seg in segments:
+            start = str(timedelta(seconds=int(seg["start"]))) + ",000"
+            end = str(timedelta(seconds=int(seg["end"]))) + ",000"
+            text = seg["text"].strip()
+            segment_id = seg["id"] + 1
+            f.write(f"{segment_id}\n{start} --> {end}\n{text}\n\n")
+
+    print("Subtitles generated successfully:", output_srt)
+    return output_srt
+
+
+def add_subtitles_to_video(video_path, subtitle_path, output_video="final_video_with_subs.mp4"):
     api_url = "https://brainrot-fkem.onrender.com/add_subtitles/"
-    payload = {"video_path": video_path, "subtitles": subtitles}
-    response = requests.post(api_url, json=payload)
+
+    with open(video_path, "rb") as vid, open(subtitle_path, "rb") as sub:
+        files = {
+            "video": vid,
+            "subtitle": sub
+        }
+        response = requests.post(api_url, files=files)
+
     if response.status_code == 200:
         return response.json()["output_video"]
     else:
-        raise Exception("Failed to add subtitles")
+        raise Exception(f"Failed to add subtitles: {response.text}")
+
 
 st.title("📽️ Video Generator from YouTube & PDF")
 playlist_url = "https://www.youtube.com/playlist?list=PLJVvekmbcMxBCh1Cb997PA2hsrxmxdB6G"
@@ -134,11 +162,18 @@ if pdf_file:
     audio_path = text_to_speech(brainrot_text, "output.mp3", playback_speed=1.5)
     st.audio(audio_path)
     if st.button("Generate Video"):
-        random_video_url = get_random_video_from_playlist(playlist_url)
-        if random_video_url:
-            video_path = download_video_clip(random_video_url, "video.mp4", duration=50)
-            final_video = process_video(video_path, audio_path, "final_output.mp4")
-            final_video_with_subs = add_subtitles_to_video(final_video, brainrot_text)
-            st.video(final_video_with_subs)
+    random_video_url = get_random_video_from_playlist(playlist_url)
+    if random_video_url:
+        video_path = download_video_clip(random_video_url, "video.mp4", duration=50)
+        final_video = process_video(video_path, audio_path, "final_output.mp4")
+
+        # 🎯 Tạo file SRT từ audio bằng Whisper
+        subtitle_path = generate_srt_from_audio(audio_path, "output.srt")
+
+        # 🚀 Gửi video + sub lên API
+        final_video_with_subs = add_subtitles_to_video(final_video, subtitle_path)
+
+        st.video(final_video_with_subs)
+
 else:
     st.write("Upload a PDF to proceed!")
