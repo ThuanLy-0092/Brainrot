@@ -110,7 +110,7 @@ def process_video(video_path, audio_path, output_video="final_output.mp4"):
     return output_video
 
 def add_subtitles_to_video(video_path, subtitles, output_video="final_video_with_subs.mp4"):
-    api_url = "http://localhost:8000/add_subtitles"
+    api_url = "http://localhost:8000/add_subtitles/"
     payload = {"video_path": video_path, "subtitles": subtitles}
     response = requests.post(api_url, json=payload)
     if response.status_code == 200:
