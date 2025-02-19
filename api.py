@@ -45,7 +45,7 @@ async def attach_subtitles(
     video_clip = VideoFileClip(video_path)
 
     # Tạo subtitle clip
-    generator = lambda txt: TextClip(txt, font='Arial', fontsize=40, color='white', stroke_color='black', stroke_width=1, method='caption', size=(video_clip.w * 0.9, None), align='center')
+    generator = lambda txt: TextClip(txt, font='DejaVu-Sans', fontsize=40, color='white', stroke_color='black', stroke_width=1, method='caption', size=(video_clip.w * 0.9, None), align='center')
     subtitles = SubtitlesClip(subtitle_path, generator)
 
     # Ghép sub vào video
