@@ -156,19 +156,23 @@ playlist_url = "https://www.youtube.com/playlist?list=PLJVvekmbcMxBCh1Cb997PA2hs
 pdf_file = st.file_uploader("Upload PDF File", type=["pdf"])
 
 temp_pdf_path = "temp.pdf"
+
 if pdf_file:
     with open(temp_pdf_path, "wb") as f:
         f.write(pdf_file.read())
+    
     loader = PyPDFLoader(temp_pdf_path)
-    pages = [page.page_content for page in loader.load()]
-    combined_text = ' '.join(pages)
+    pages = loader.load()[:10]  # Chỉ lấy 10 trang đầu tiên
+    combined_text = ' '.join(page.page_content for page in pages)
+    
     cleaned_text = preprocess_text(combined_text)
     brainrot_text = generate_brainrot_text(cleaned_text)
-    audio_path = text_to_speech(brainrot_text, "output.mp3", playback_speed=1.5)
+    
     st.audio(audio_path)
     if st.button("Generate Video"):
         random_video_url = get_random_video_from_playlist(playlist_url)
         if random_video_url:
+            audio_path = text_to_speech(brainrot_text, "output.mp3", playback_speed=1.5)
             video_path = download_video_clip(random_video_url, "video.mp4", duration=50)
             final_video = process_video(video_path, audio_path, "final_output.mp4")
     
