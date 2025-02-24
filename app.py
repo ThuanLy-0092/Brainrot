@@ -168,7 +168,6 @@ if pdf_file:
     cleaned_text = preprocess_text(combined_text)
     brainrot_text = generate_brainrot_text(cleaned_text)
     
-    st.audio(audio_path)
     if st.button("Generate Video"):
         random_video_url = get_random_video_from_playlist(playlist_url)
         if random_video_url:
