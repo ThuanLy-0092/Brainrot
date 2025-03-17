@@ -31,5 +31,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Cấp quyền cho thư mục
 RUN chmod -R 777 /app
 
-# Chạy Streamlit
+# Chạy Api
 CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
